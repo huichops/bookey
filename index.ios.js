@@ -13,6 +13,8 @@ import {
 import { TabNavigator, StackNavigator } from 'react-navigation';
 import colors from './components/colors';
 
+import Ball from './components/Ball';
+import TopBar from './components/Topbar';
 import Bkey from './components/Bkey';
 import Skip from './components/Skip';
 import Feature from './components/Feature';
@@ -22,20 +24,54 @@ import CategoryList from './components/CategoryList';
 import Logo from './components/Logo';
 import Span from './components/Span';
 import Title from './components/Title';
+import response from './response';
 
 
 class PlacesScreen extends Component {
   static navigationOptions = ({navigation}) => ({
-    header: null
-  });
+    header: (<TopBar onBack={() => {}} />)
+  })
+
+  state = {
+    qlo: []
+  }
+
+
+  fetchData() {
+    setTimeout(() => {
+      this.setState({ qlo: response })
+    }, 1000);
+  }
 
   render() {
     const { navigate } = this.props.navigation;
+    this.fetchData();
+    const entries = this.state.qlo.map(({ title, entries }, j) => {
+      const categories = entries.map(({ name, photo, types = [], rating }, i) => {
+        const type = types[0] || 'restaurant';
+        return (
+          <Category type={type} rating={rating} key={i + j} photo={photo}>
+            {name}
+          </Category>
+        );
+      });
+
+      return (
+        <View>
+          <CategoryTitle>{title}</CategoryTitle>
+          <CategoryList>
+          {categories}
+          </CategoryList>
+        </View>
+      );
+    });
 
     return (
       <View style={{ flex: 1 }}>
+        <StatusBar
+          barStyle='light-content'
+        />
         <View style={{ flexDirection: 'column', backgroundColor: colors.darkishBlue, paddingBottom: 32, paddingTop: 32, alignItems: 'center', flex: 1 }}>
-          <Logo />
           <Title>
             ¿Qué te gustaría hacer durante tu estancia?
           </Title>
@@ -49,28 +85,7 @@ class PlacesScreen extends Component {
               <Feature type='help' />
               <Feature type='services' />
             </CategoryList>
-            <CategoryTitle>Para comer.</CategoryTitle>
-            <CategoryList>
-              <Category type='Pasear'>343</Category>
-              <Category type='Pasear'>343</Category>
-              <Category type='Pasear'>343</Category>
-              <Category type='Pasear'>343</Category>
-              <Category type='Pasear'>343</Category>
-            </CategoryList>
-          <CategoryTitle>Cerca de ti.</CategoryTitle>
-          <CategoryList>
-            <Category type='Restaurant'>343</Category>
-            <Category type='Pasear'>343</Category>
-            <Category type='Pasear'>343</Category>
-            <Category type='Pasear'>343</Category>
-          </CategoryList>
-          <CategoryTitle>Vida de noche.</CategoryTitle>
-          <CategoryList>
-            <Category type='Cumbia'>La Lupita</Category>
-            <Category type='Cumbia'>La Lupita</Category>
-            <Category type='Blues'>Escarabajo Scratch</Category>
-            <Category type='Trance'>Bar Américas</Category>
-          </CategoryList>
+            {entries}
         </ScrollView>
         </View>
       </View>
@@ -81,66 +96,51 @@ class PlacesScreen extends Component {
 
 class WelcomeScreen extends Component {
   static navigationOptions = ({navigation}) => ({
-    header: null
+    header: (<TopBar onBack={() => {}} />)
   });
 
-  state = { a: 'que onda pinche perro' };
-
-  fetchData() {
-    fetch('http://bokey.herokuapp.com/')
-      .then((res) => res.text())
-      .then((text) => {
-        this.setState({ a: text });
-      })
-      .catch((error) => {
-        console.warn(error);
-      });
-  }
-
   render() {
-    this.fetchData();
-
     const { navigate } = this.props.navigation;
     return (
       <View style={{ flex: 1 }}>
+        <StatusBar
+          barStyle='light-content'
+        />
         <View style={{ flexDirection: 'column', backgroundColor: colors.darkishBlue, paddingBottom: 32, paddingTop: 32, alignItems: 'center' }}>
-          <Logo />
           <Title>¡Bienvenido a Guadalajara!</Title>
-          <Span>{this.state.a}</Span>
           <Span>
-            Estas a 40 minutos de tu alojamiento.
+            Estas a
+            <Text style={{ fontWeight: 'bold' }}> 40 minutos </Text>
+            de tu alojamiento.
             Te ayudamos a llegar a tu lugar de hospedaje.
           </Span>
         </View>
-        <View style={{ backgroundColor: '#d8d8d8', flex: 8, padding: 20, justifyContent: 'space-between' }}>
+        <View style={{ backgroundColor: '#d8d8d8', flex: 7, padding: 20, justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'row' }}>
             <View style={{ paddingRight: 20  }}>
-              <View style={{ borderRadius: 60, width: 60, height: 60, backgroundColor: '#0998ff' }}>
-              </View>
+              <Ball type='car' />
             </View>
             <View style={{ flex: 3 }}>
               <Text style={{ fontWeight: 'bold' }}>Alquila un auto.</Text>
-              <Text>No sé que escribir aquí solo hay un texto que dice que pida un carro.</Text>
+              <Text>Encontramos 7 opciones para alquilar cerca de tu ubicación.</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
             <View style={{ paddingRight: 20  }}>
-              <View style={{ borderRadius: 60, width: 60, height: 60, backgroundColor: '#0998ff' }}>
-              </View>
+              <Ball type='shuttle' />
             </View>
             <View style={{ flex: 3, }}>
-              <Text style={{ fontWeight: 'bold' }}>Usar UBER.</Text>
-              <Text>Pues nada aquí hay un texto casualón. Y pues así.</Text>
+              <Text style={{ fontWeight: 'bold' }}>Transporte local.</Text>
+              <Text>Encontramos 4 rutas que podrías tomar.</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
             <View style={{ paddingRight: 20  }}>
-              <View style={{ borderRadius: 60, width: 60, height: 60, backgroundColor: '#0998ff' }}>
-              </View>
+              <Ball type='phone' />
             </View>
             <View style={{ flex: 3 }}>
-              <Text style={{ fontWeight: 'bold' }}>Abrir Mapa.</Text>
-              <Text>No sé que escribir aquí solo hay un texto que dice que pida un carro.</Text>
+              <Text style={{ fontWeight: 'bold' }}>Usar Uber.</Text>
+              <Text>Viaja allí con Uber $65-$78, te pasarán a buscar en 3 minutos.</Text>
             </View>
           </View>
         </View>
@@ -153,9 +153,17 @@ class WelcomeScreen extends Component {
 }
 
 class MainScreen extends Component {
-  static navigationOptions = ({navigation}) => ({
-    header: null
-  });
+  static navigationOptions = ({navigation}) => {
+    const { navigate } = navigation;
+
+
+    return {
+      headerLeft: (<Button title='X' onPress={() => navigate('Places')} color={colors.white} fontWeight='bold' />),
+      headerStyle: { backgroundColor: colors.darkishBlue, marginBottom: -20 },
+      headerTintColor: colors.white
+    }
+  };
+
   render() {
     const { navigate } = this.props.navigation;
     return (
@@ -190,7 +198,8 @@ const BasicApp = StackNavigator({
   Places: { screen: PlacesScreen },
   Main: { screen: MainScreen },
 }, {
-  initialRouteName: 'Places'
+  initialRouteName: 'Welcome',
+  headerMode: 'screen'
 });
 
 AppRegistry.registerComponent('bookey', () => BasicApp);
